@@ -619,7 +619,12 @@ export default function App() {
                   {visits.map((v) => {
                     const checkIn = new Date(v.checkInAt);
                     const checkOut = v.checkOutAt ? new Date(v.checkOutAt) : null;
-                    const duration = checkOut ? `${Math.round((checkOut - checkIn) / 60000)} min` : "In progress";
+                    const duration =
+                      mode === "control"
+                        ? "0 min"
+                        : checkOut
+                          ? `${Math.round((checkOut - checkIn) / 60000)} min`
+                          : "In progress";
                     return (
                       <tr key={v.visitId}>
                         <td>{v.visitId.substring(0, 8)}...</td>
