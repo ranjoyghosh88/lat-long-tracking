@@ -99,6 +99,7 @@ export default function App() {
   const [loadingVisits, setLoadingVisits] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [mode, setMode] = useState("variant");
   const [modal, setModal] = useState({
     open: false,
     title: "",
@@ -185,6 +186,9 @@ export default function App() {
   const alertUser = (title, message) => openModal({ title, message, confirmLabel: "OK" });
   const confirmUser = (title, message) =>
     openModal({ title, message, confirmLabel: "Confirm", cancelLabel: "Cancel" });
+
+  const canSubmit =
+    !!vendorName.trim() && !!pos && !!photoUrl && !duplicateVisit && !loading;
 
   const getLocation = async () => {
     setStatus("Requesting location...");
@@ -484,6 +488,28 @@ export default function App() {
           <p className="status-line">
             Status: {status || "Ready"} | Device Key: {publicKeyB64 ? "✓ Persistent" : "⏳"}
           </p>
+          <div className="mode-toggle">
+            <label className="mode-option">
+              <input
+                type="radio"
+                name="mode"
+                value="variant"
+                checked={mode === "variant"}
+                onChange={() => setMode("variant")}
+              />
+              <span>Variant</span>
+            </label>
+            <label className="mode-option">
+              <input
+                type="radio"
+                name="mode"
+                value="control"
+                checked={mode === "control"}
+                onChange={() => setMode("control")}
+              />
+              <span>Control</span>
+            </label>
+          </div>
           <div className="field-row">
             <input
               value={vendorName}
@@ -538,7 +564,15 @@ export default function App() {
 
           <canvas ref={canvasRef} className="hidden" />
 
-          {!visitId ? (
+          {mode === "control" ? (
+            <button
+              onClick={checkIn}
+              disabled={!canSubmit}
+              className={`button primary block large ${loading ? "is-loading" : ""}`}
+            >
+              ✓ SUBMIT
+            </button>
+          ) : !visitId ? (
             <button
               onClick={checkIn}
               disabled={!pos || !photoUrl || loading}

@@ -63,6 +63,30 @@
   margin-bottom: 12px;
 }
 
+.mode-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #c8c8c8;
+  background: #f7f7f7;
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+}
+
+.mode-option input {
+  accent-color: #2f6fed;
+}
+
 .field-row {
   display: flex;
   gap: 12px;
