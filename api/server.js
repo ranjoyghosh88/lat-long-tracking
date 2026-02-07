@@ -103,9 +103,10 @@ app.post("/api/photos", upload.single("photo"), async (req, res) => {
     const mime = req.file.mimetype || "";
     if (!mime.startsWith("image/")) return res.status(400).json({ error: "Invalid file type" });
 
-    const id = crypto.randomUUID();
+    const rawVendor = String(req.body?.vendorName || "").trim();
+    const vendorSlug = rawVendor.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "vendor";
     const ext = mime.includes("png") ? "png" : "jpg";
-    const filename = `${id}.${ext}`;
+    const filename = `${vendorSlug}.${ext}`;
 
     const filePath = path.join(__dirname, PHOTO_DIR, filename);
     fs.writeFileSync(filePath, req.file.buffer);

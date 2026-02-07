@@ -99,7 +99,10 @@ export default function App() {
   const [loadingVisits, setLoadingVisits] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [mode, setMode] = useState("variant");
+  const [mode, setMode] = useState(() => {
+    const stored = window.localStorage.getItem("lp_mode");
+    return stored === "control" || stored === "variant" ? stored : "variant";
+  });
   const [modal, setModal] = useState({
     open: false,
     title: "",
@@ -159,6 +162,10 @@ export default function App() {
       loadVisits();
     }
   }, [tab]);
+
+  useEffect(() => {
+    window.localStorage.setItem("lp_mode", mode);
+  }, [mode]);
 
   const normalizedVendorName = vendorName.trim().toLowerCase();
   const duplicateVisit = useMemo(() => {
@@ -247,7 +254,7 @@ export default function App() {
       ctx.drawImage(videoRef.current, 0, 0);
       
       canvasRef.current.toBlob(async (blob) => {
-        const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+        const file = new File([blob], buildPhotoFileName("camera"), { type: "image/jpeg" });
         await processPhoto(file);
         
         // Stop camera
@@ -261,16 +268,26 @@ export default function App() {
     }
   };
 
+  const buildPhotoFileName = (sourceName) => {
+    const vendorBase = vendorName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") || "vendor";
+    const time = new Date().toISOString().replace(/[:.]/g, "-");
+    return `${vendorBase}-${sourceName}-${time}.jpg`;
+  };
+
   const processPhoto = async (file) => {
     try {
-      const sha = await hashFile(file);
+      const sourceName = file.name ? file.name.replace(/\.[^/.]+$/, "") : "photo";
+      const renamedFile = new File([file], buildPhotoFileName(sourceName), { type: file.type || "image/jpeg" });
+      setPhotoFile(renamedFile);
+      const sha = await hashFile(renamedFile);
       
       const reader = new FileReader();
       reader.onload = (e) => setPreviewUrl(e.target.result);
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(renamedFile);
       
       const fd = new FormData();
-      fd.append("photo", file);
+      fd.append("photo", renamedFile);
+      fd.append("vendorName", vendorName.trim());
       setStatus("📸 Uploading photo...");
       const res = await fetch(`${API_BASE}/api/photos`, { method: "POST", body: fd });
       if (!res.ok) throw new Error("Upload failed");
@@ -354,9 +371,7 @@ export default function App() {
       setCheckInAt(capturedAt);
       setStatus("✓ Checked in successfully!");
       loadVisits();
-      setPhotoUrl(null);
-      setPhotoSha(null);
-      setPos(null);
+      clearFormAfterSubmit();
     } catch (e) {
       setStatus(`❌ Check-in failed: ${e.message}`);
     }
@@ -426,13 +441,20 @@ export default function App() {
       loadVisits();
       setVisitId(null);
       setCheckInAt(null);
-      setPhotoUrl(null);
-      setPhotoSha(null);
-      setPos(null);
+      clearFormAfterSubmit();
     } catch (e) {
       setStatus(`❌ Check-out failed: ${e.message}`);
     }
     setLoading(false);
+  };
+
+  const clearFormAfterSubmit = () => {
+    setVendorName("");
+    setPos(null);
+    setPhotoUrl(null);
+    setPhotoSha(null);
+    setPhotoFile(null);
+    setPreviewUrl(null);
   };
 
   const exportData = (format) => {
