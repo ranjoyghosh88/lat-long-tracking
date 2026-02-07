@@ -104,7 +104,8 @@ app.post("/api/photos", upload.single("photo"), async (req, res) => {
     if (!mime.startsWith("image/")) return res.status(400).json({ error: "Invalid file type" });
 
     const rawVendor = String(req.body?.vendorName || "").trim();
-    const vendorSlug = rawVendor.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "vendor";
+    if (!rawVendor) return res.status(400).json({ error: "Missing vendorName" });
+    const vendorSlug = rawVendor.replace(/\s+/g, "-");
     const ext = mime.includes("png") ? "png" : "jpg";
     const filename = `${vendorSlug}.${ext}`;
 
@@ -276,8 +277,9 @@ app.post("/api/visits/check-in", async (req, res) => {
 
   const visitId = crypto.randomUUID();
 
+  const normalizedVendor = body.vendorName.trim();
   try {
-    await pool.query(`INSERT INTO visits (id, vendor_name) VALUES ($1, $2)`, [visitId, body.vendorName]);
+    await pool.query(`INSERT INTO visits (id, vendor_name) VALUES ($1, $2)`, [visitId, normalizedVendor]);
   } catch {
     return res.status(500).json({ error: "Failed to create visit" });
   }
@@ -300,8 +302,10 @@ app.post("/api/visits/:visitId/check-out", async (req, res) => {
   const visit = await pool.query(`SELECT vendor_name FROM visits WHERE id = $1`, [visitId]);
   if (visit.rowCount === 0) return res.status(404).json({ error: "Visit not found" });
   
-  const checkInVendor = visit.rows[0].vendor_name;
-  if (body.vendorName !== checkInVendor) {
+  const checkInVendor = String(visit.rows[0].vendor_name || "");
+  const normalizedCheckIn = checkInVendor.trim().toLowerCase();
+  const normalizedCheckOut = body.vendorName.trim().toLowerCase();
+  if (normalizedCheckOut !== normalizedCheckIn) {
     return res.status(400).json({ error: `Vendor mismatch: check-in was "${checkInVendor}" but check-out is "${body.vendorName}"` });
   }
   const r = await insertEvent({ visitId, body, req });

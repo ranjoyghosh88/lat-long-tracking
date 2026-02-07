@@ -276,6 +276,11 @@ export default function App() {
 
   const processPhoto = async (file) => {
     try {
+      if (!vendorName || vendorName.trim().length === 0) {
+        setStatus("❌ Enter vendor name before uploading photo");
+        await alertUser("Vendor name required", "Please enter a vendor name before uploading a photo.");
+        return;
+      }
       const sourceName = file.name ? file.name.replace(/\.[^/.]+$/, "") : "photo";
       const renamedFile = new File([file], buildPhotoFileName(sourceName), { type: file.type || "image/jpeg" });
       setPhotoFile(renamedFile);
