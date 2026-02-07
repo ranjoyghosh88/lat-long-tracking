@@ -1,0 +1,18 @@
+
+> dev
+> node --watch server.js
+
+API running on http://localhost:3001
+Uploads at http://localhost:3001/uploads/...
+Restarting 'server.js'
+API running on http://localhost:3001
+Uploads at http://localhost:3001/uploads/...
+Restarting 'server.js'
+API running on http://localhost:3001
+Uploads at http://localhost:3001/uploads/...
+Restarting 'server.js'
+API running on http://localhost:3001
+Uploads at http://localhost:3001/uploads/...
+Restarting 'server.js'
+API running on http://localhost:3001
+Uploads at http://localhost:3001/uploads/...
