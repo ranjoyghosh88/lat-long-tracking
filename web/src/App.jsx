@@ -2,7 +2,9 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
-const ACCURACY_THRESHOLD = 50; // meters
+const ACCURACY_THRESHOLD = 35; // meters
+const GPS_ATTEMPTS = 5;
+const GPS_TIMEOUT_MS = 12000;
 const DB_NAME = "LocationProofDB";
 const DB_VERSION = 1;
 const STORE_NAME = "keys";
@@ -103,6 +105,8 @@ export default function App() {
     const stored = window.localStorage.getItem("lp_mode");
     return stored === "control" || stored === "variant" ? stored : "variant";
   });
+  const [vendorOptions, setVendorOptions] = useState([]);
+  const [loadingVendors, setLoadingVendors] = useState(false);
   const [modal, setModal] = useState({
     open: false,
     title: "",
@@ -158,6 +162,23 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const loadVendors = async () => {
+      setLoadingVendors(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/vendors`);
+        if (res.ok) {
+          const data = await res.json();
+          setVendorOptions(Array.isArray(data.items) ? data.items : []);
+        }
+      } catch (e) {
+        console.error("Error loading vendors:", e);
+      }
+      setLoadingVendors(false);
+    };
+    loadVendors();
+  }, []);
+
+  useEffect(() => {
     if (tab === "history") {
       loadVisits();
     }
@@ -204,19 +225,43 @@ export default function App() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
+    const getPosition = () =>
+      new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: GPS_TIMEOUT_MS,
+          maximumAge: 0
+        });
+      });
+
+    let best = null;
+    let lastError = null;
+    for (let attempt = 1; attempt <= GPS_ATTEMPTS; attempt += 1) {
+      try {
+        setStatus(`Requesting location... (${attempt}/${GPS_ATTEMPTS})`);
+        const p = await getPosition();
         const { latitude, longitude, accuracy } = p.coords;
-        if (accuracy > ACCURACY_THRESHOLD) {
-          setStatus(`⚠️ Accuracy ${Math.round(accuracy)}m exceeds threshold (${ACCURACY_THRESHOLD}m)`);
-          return;
+        if (!best || accuracy < best.accuracy) {
+          best = { lat: latitude, lng: longitude, accuracy };
         }
-        setPos({ lat: latitude, lng: longitude, accuracy });
-        setStatus(`✓ Location captured (±${Math.round(accuracy)}m)`);
-      },
-      (err) => setStatus(`❌ ${err.message}`),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
+        if (accuracy <= ACCURACY_THRESHOLD) break;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    if (!best) {
+      setStatus(`❌ ${lastError?.message || "Failed to get location"}`);
+      return;
+    }
+
+    if (best.accuracy > ACCURACY_THRESHOLD) {
+      setStatus(`⚠️ Accuracy ${Math.round(best.accuracy)}m exceeds threshold (${ACCURACY_THRESHOLD}m)`);
+      return;
+    }
+
+    setPos(best);
+    setStatus(`✓ Location captured (±${Math.round(best.accuracy)}m)`);
   };
 
   const capturePhoto = () => {
@@ -538,12 +583,20 @@ export default function App() {
             </label>
           </div>
           <div className="field-row">
-            <input
+            <select
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
-              placeholder="Vendor name (required)"
               className="text-input"
-            />
+            >
+              <option value="" disabled>
+                {loadingVendors ? "Loading vendors..." : "Select vendor"}
+              </option>
+              {vendorOptions.map((vendor) => (
+                <option key={vendor} value={vendor}>
+                  {vendor}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="step-grid">

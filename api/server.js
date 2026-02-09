@@ -67,6 +67,18 @@ app.use("/uploads", express.static(path.join(__dirname, PHOTO_DIR)));
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
+app.get("/api/vendors", (req, res) => {
+  res.json({
+    items: [
+      "Vendor One",
+      "Vendor Two",
+      "Vendor Three",
+      "Vendor Four",
+      "Vendor Five"
+    ]
+  });
+});
+
 function sha256Hex(buf) {
   return crypto.createHash("sha256").update(buf).digest("hex");
 }

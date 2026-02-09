@@ -3,37 +3,7 @@
 > vite --host 0.0.0.0
 
 
-  VITE v7.3.1  ready in 118 ms
+  VITE v7.3.1  ready in 185 ms
 
   ➜  Local:   http://localhost:5100/
-  ➜  Network: http://192.168.1.251:5100/
-7:22:13 PM [vite] .env changed, restarting server...
-7:22:13 PM [vite] server restarted.
-7:22:14 PM [vite] .env changed, restarting server...
-7:22:14 PM [vite] server restarted.
-7:38:41 PM [vite] (client) hmr update /src/App.jsx
-7:38:54 PM [vite] (client) hmr update /src/App.jsx
-7:39:44 PM [vite] (client) hmr update /src/App.css
-7:42:30 PM [vite] (client) hmr update /src/App.css
-7:42:33 PM [vite] (client) hmr update /src/App.css
-7:43:51 PM [vite] (client) hmr update /src/App.css
-7:44:03 PM [vite] (client) hmr update /src/App.css
-7:45:26 PM [vite] (client) hmr update /src/App.jsx
-7:45:29 PM [vite] (client) hmr update /src/App.jsx
-7:45:41 PM [vite] (client) hmr update /src/App.jsx
-7:47:52 PM [vite] (client) hmr update /src/App.css
-7:47:54 PM [vite] (client) hmr update /src/App.css
-7:50:12 PM [vite] (client) hmr update /src/App.css
-7:50:14 PM [vite] (client) hmr update /src/App.css
-8:17:19 PM [vite] (client) hmr update /src/App.jsx
-8:18:04 PM [vite] (client) hmr update /src/App.css
-9:45:20 PM [vite] (client) hmr update /src/App.css
-9:45:20 PM [vite] (client) hmr update /src/App.jsx
-9:51:00 PM [vite] (client) hmr update /src/App.jsx
-9:51:59 PM [vite] (client) hmr update /src/App.jsx
-10:03:56 PM [vite] (client) hmr update /src/App.jsx
-10:04:01 PM [vite] (client) hmr update /src/App.jsx
-10:07:45 PM [vite] (client) hmr update /src/App.jsx
-10:07:47 PM [vite] (client) hmr update /src/App.jsx
-10:24:38 PM [vite] (client) hmr update /src/App.jsx
-10:24:43 PM [vite] (client) hmr update /src/App.jsx
+  ➜  Network: http://192.168.4.144:5100/
